@@ -1,6 +1,6 @@
 # Spotify recorder
 
-spotify recorder which run without any special dependencies. All you need is:   
+spotify recorder is designed to run without any special dependencies. All you need is:   
 `pactl`, `dbus-send` and `ffmpeg` 
 
 Ads won't be recorded by default.  
