@@ -1,4 +1,5 @@
 # Spotify recorder
+Version 0.1.0
 
 spotify recorder is designed to run without any special dependencies. All you need is:   
 `pactl`, `dbus-send` and `ffmpeg` 
