@@ -8,6 +8,7 @@ Every song is stored in an extra file of format `artist - title.mp3`.
 These are also set as MP3 tags.
 
 ## Usage
+Start spotify and press play, then start the recorder:
 
 `recorder.sh`  
 `recorder.sh /path/to/music/store/`  

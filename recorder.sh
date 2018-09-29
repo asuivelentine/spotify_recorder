@@ -46,6 +46,6 @@ while true; do
 	current_record_title=$title
 	filename="${music_folder}${artist}- ${title::-1}.mp3"
 	
-	ffmpeg -f pulse -ac 2 -i "$pulse_sink" \
+	ffmpeg -hide_banner -loglevel panic -nostats  -f pulse -ac 2 -i "$pulse_sink" \
 		-metadata title="$title" -metadata artist="$artist" "$filename" &
 done
