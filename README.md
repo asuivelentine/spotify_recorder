@@ -3,7 +3,7 @@
 spotify recorder which run without any special dependencies. All you need is:   
 `pactl`, `dbus-send` and `ffmpeg` 
 
-Ads won't be recorded b default.  
+Ads won't be recorded by default.  
 Every song is stored in an extra file of format `artist - title.mp3`.   
 These are also set as MP3 tags.
 
