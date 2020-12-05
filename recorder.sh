@@ -28,7 +28,11 @@ while true; do
 		string:org.mpris.MediaPlayer2.Player string:Metadata 2>/dev/null)
 
 	artist=$(echo $spotify_metadata | grep -o 'artist.*autoRating' | grep -o '"[a-zA-Z0-9].* ]' | tr -d '"]')
-	title=$(echo $spotify_metadata | grep -o 'title.*trackNumber' | grep -o '"[a-zA-Z0-9].*)' | tr -d '")') 
+    albumartist=$(echo $spotify_metadata | grep -o 'albumArtist.*artist' | grep -o '"[a-zA-Z0-9].* ]' | tr -d '"]')
+    album=$(echo $spotify_metadata | grep -o 'album.*albumArtist' | grep -o '"[a-zA-Z0-9].*)' | tr -d '")' | tr '/' '-' |xargs)
+	title=$(echo $spotify_metadata | grep -o 'title.*trackNumber' | grep -o '"[a-zA-Z0-9].*)' | tr -d '")' | tr '/' '-')
+    trk=$(echo $spotify_metadata | grep -o 'trackNumber.*url' | grep -o ' [0-9].*)' | tr -d ' )')
+    printf -v track "%02d" $trk
 
 	if [ -z "$artist" ]; then
 		killall ffmpeg 2> /dev/null
@@ -44,8 +48,8 @@ while true; do
 
 	current_record_artist=$artist
 	current_record_title=$title
-	filename="${music_folder}${artist}- ${title::-1}.mp3"
+    filename="${music_folder}${artist}- ${title::-1}.mp3"
 	
 	ffmpeg -hide_banner -loglevel panic -nostats  -f pulse -ac 2 -i "$pulse_sink" \
-		-metadata title="$title" -metadata artist="$artist" "$filename" &
+		-metadata title="$title" -metadata artist="$artist" -metadata album="$album" -metadata album_artist="$albumartist" -metadata track="$track" "$filename" &
 done
