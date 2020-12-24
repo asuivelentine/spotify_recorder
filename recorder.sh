@@ -57,11 +57,15 @@ while true; do
         /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
         string:org.mpris.MediaPlayer2.Player string:Metadata 2>/dev/null)
 
-    artist=$(echo $spotify_metadata | grep -o 'artist.*autoRating' | grep -o '"[a-zA-Z0-9].* ]' | tr -d '"]' |xargs -0)
-    albumartist=$(echo $spotify_metadata | grep -o 'albumArtist.*artist' | grep -o '"[a-zA-Z0-9].* ]' | tr -d '"]' |xargs -0)
-    album=$(echo $spotify_metadata | grep -o 'album.*albumArtist' | grep -o '"[a-zA-Z0-9].*)' | tr -d '")' | tr '/' '-' |xargs -0)
-    title=$(echo $spotify_metadata | grep -o 'title.*trackNumber' | grep -o '"[a-zA-Z0-9].*)' | tr -d '")' | tr '/' '-' |xargs -0)
+    artist=$(echo $spotify_metadata | grep -o 'artist.*autoRating' | grep -o '"[a-zA-Z0-9].* ]' | tr -d '"]')
+    albumartist=$(echo $spotify_metadata | grep -o 'albumArtist.*artist' | grep -o '"[a-zA-Z0-9].* ]' | tr -d '"]')
+    album=$(echo $spotify_metadata | grep -o 'album.*albumArtist' | grep -o '"[a-zA-Z0-9].*)' | tr -d '")' | tr '/' '-')
+    title=$(echo $spotify_metadata | grep -o 'title.*trackNumber' | grep -o '"[a-zA-Z0-9].*)' | tr -d '")' | tr '/' '-')
     trk=$(echo $spotify_metadata | grep -o 'trackNumber.*url' | grep -o ' [0-9].*)' | tr -d ' )')
+    album=${album%% }
+    artist=${artist%% }
+    albumartist=${albumartist%% }
+    title=${title%% }
     printf -v track "%02d" $trk
 
     if [ -z "$artist" ]; then
