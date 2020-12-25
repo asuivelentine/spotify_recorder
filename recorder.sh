@@ -15,6 +15,7 @@ if [ ! -z $1 ]; then
             echo -e '  Be sure to use single quotes when passing the filepath arg to prevent shell expansion.'
             echo -e "    eg. $0 -f '"'~/Downloads/$artist/$album/$track - $title.mp3'"'"
             echo -e '  As shortcut, -a sets filepath to "$music_folder/$album/$track - $title.mp3"\n  Directories are created as needed.'
+            echo -e '  If the eyed3 pkg is installed then album art will be written to image tags.'
             exit 0
         elif [[ ${1:1:1} = 'a' && ! -z $2 ]]; then
             music_folder="$2"
@@ -56,14 +57,13 @@ while true; do
     spotify_metadata=$(dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
         /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
         string:org.mpris.MediaPlayer2.Player string:Metadata 2>/dev/null)
-	readarray -t data <<<$(echo $spotify_metadata | grep -Po '"(?:[^"\\]|\\.)*"| [0-9]+' |sed 's/\\"/"/g' | tr '/' '-')
-	#readarray -t data <<<$(echo $spotify_metadata | grep -Eo '"[^"]*"| [0-9]+' | tr -d '"' | tr '/' '-')
-	arturl=${data[5]:1:-1}
-	arturl="https://i.scdn.co/image/"${arturl##*-}  # fixup for buggy art url metadata
-	album=${data[7]:1:-1}
-	albumartist=${data[9]:1:-1}
-	artist=${data[11]:1:-1}
-	title=${data[17]:1:-1}
+    readarray -t data <<<$(echo $spotify_metadata | grep -Po '"(?:[^"\\]|\\.)*"| [0-9]+' |sed 's/\\"/"/g' | tr '/' '-')
+    arturl=${data[5]:1:-1}
+    arturl="https://i.scdn.co/image/"${arturl##*-}  # fixup for buggy art url metadata
+    album=${data[7]:1:-1}
+    albumartist=${data[9]:1:-1}
+    artist=${data[11]:1:-1}
+    title=${data[17]:1:-1}
     printf -v track "%02d" ${data[19]}
 
     if [ -z "$artist" ]; then
@@ -76,6 +76,11 @@ while true; do
         continue
     else
         killall ffmpeg 2>/dev/null
+        if command -v eyeD3 &> /dev/null; then
+            if [[ -f "$recdir/folder.jpg" && -f "$filename" ]]; then
+                eyeD3 -Q --add-image "$recdir/folder.jpg:FRONT_COVER" "$filename" &>/dev/null
+            fi
+        fi
     fi
 
     current_record_artist=$artist
@@ -83,12 +88,13 @@ while true; do
     expand_filename
     recdir="$(dirname "$filename")"
     mkdir -p "$recdir"
+
     echo "Recording to $filename"
     
     ffmpeg -hide_banner -loglevel panic -nostats  -f pulse -ac 2 -i "$pulse_sink" \
         -metadata title="$title" -metadata artist="$artist" -metadata album="$album" -metadata album_artist="$albumartist" -metadata track="$track" "$filename" &
-    
+
     if [ ! -f "$recdir/folder.jpg" ]; then
-		wget "$arturl" -q -O "$recdir/folder.jpg"
+        wget "$arturl" -q -O "$recdir/folder.jpg"
     fi
 done
