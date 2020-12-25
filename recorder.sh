@@ -56,13 +56,13 @@ while true; do
     spotify_metadata=$(dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
         /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
         string:org.mpris.MediaPlayer2.Player string:Metadata 2>/dev/null)
-	readarray -t data <<<$(echo $spotify_metadata | grep -Eo '"[^"]*"| [0-9]+' | tr -d '"' | tr '/' '-')
-	album=${data[7]}
-	albumartist=${data[9]}
-	artist=${data[11]}
-	title=${data[17]}
-	trk=${data[19]}
-    printf -v track "%02d" $trk
+	readarray -t data <<<$(echo $spotify_metadata | grep -Po '"(?:[^"\\]|\\.)*"| [0-9]+' |sed 's/\\"/"/g' | tr '/' '-')
+	#readarray -t data <<<$(echo $spotify_metadata | grep -Eo '"[^"]*"| [0-9]+' | tr -d '"' | tr '/' '-')
+	album=${data[7]:1:-1}
+	albumartist=${data[9]:1:-1}
+	artist=${data[11]:1:-1}
+	title=${data[17]:1:-1}
+    printf -v track "%02d" ${data[19]}
 
     if [ -z "$artist" ]; then
         killall ffmpeg 2> /dev/null
