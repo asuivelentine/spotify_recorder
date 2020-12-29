@@ -57,13 +57,13 @@ while true; do
     spotify_metadata=$(dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
         /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
         string:org.mpris.MediaPlayer2.Player string:Metadata 2>/dev/null)
-    readarray -t data <<<$(echo $spotify_metadata | grep -Po '"(?:[^"\\]|\\.)*"| [0-9]+' |sed 's/\\"/"/g' | tr '/' '-')
-    arturl=${data[5]:1:-1}
+    readarray -t data <<<$(echo $spotify_metadata | grep -Po '".*?" (\)|v|])| [0-9]+' | tr '/' '-')
+    arturl=${data[5]:1:-3}
     arturl="https://i.scdn.co/image/"${arturl##*-}  # fixup for buggy art url metadata
-    album=${data[7]:1:-1}
-    albumartist=${data[9]:1:-1}
-    artist=${data[11]:1:-1}
-    title=${data[17]:1:-1}
+    album=${data[7]:1:-3}
+    albumartist=${data[9]:1:-3}
+    artist=${data[11]:1:-3}
+    title=${data[17]:1:-3}
     printf -v track "%02d" ${data[19]}
 
     if [ -z "$artist" ]; then
@@ -90,7 +90,6 @@ while true; do
     mkdir -p "$recdir"
 
     echo "Recording to $filename"
-    
     ffmpeg -hide_banner -loglevel panic -nostats  -f pulse -ac 2 -i "$pulse_sink" \
         -metadata title="$title" -metadata artist="$artist" -metadata album="$album" -metadata album_artist="$albumartist" -metadata track="$track" "$filename" &
 
